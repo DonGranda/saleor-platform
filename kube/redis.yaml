@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-dp
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: library/redis:7.0-alpine
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+          - name:  redis-port
+            containerPort: 6379 
+        volumeMounts:
+          - name: saleor-redis
+            mountPath: /data
+      volumes:
+        - name: redis-vol
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379

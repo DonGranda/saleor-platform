@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit-dep
+spec:
+  selector:
+    matchLabels:
+      app: mailpit
+  template:
+    metadata:
+      labels:
+        app: mailpit
+    spec:
+      containers:
+      - name: mailpit
+        image: axllent/mailpit
+        ports:
+        - containerPort: 1025
+        - containerPort: 8025
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailpit-service
+spec:
+  selector:
+    app: mailpit
+  ports:
+  - protocol: TCP
+    port: 1025
+    targetPort: 1025 
+  - protocol: TCP
+    port: 8025
+    targetPort: 8025  
+

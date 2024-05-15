@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seleordb-postgress
+  namespace: saleorapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: saleor-database
+  template:
+    metadata:
+      labels:
+        app: saleor-database
+    spec:
+      containers:
+      - name: saleor-db
+        image: library/postgres:13-alpine
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+          - name: saleor-db
+            mountPath: /var/lib/postgresql/data
+          - name: replica-user-sql
+            mountPath: /docker-entrypoint-initdb.d/replica_user.sql
+        env:
+        - name: POSTGRES_USER
+          value: "saleor"
+        - name: POSTGRES_PASSWORD
+          value: "saleor"
+      restartPolicy: Always
+      volumes:
+        - name: saleor-db
+          emptyDir: {}
+        - name: replica-user-sql
+          configMap:
+            name: saleor-config
+            items:
+            - key: replica_user.sql
+              path: replica_user.sql
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: seleordb-postgress-svc
+spec:
+  selector:
+    app: saleor-database
+  ports:
+  - port: 5432
+    targetPort: 5432
+
+        
